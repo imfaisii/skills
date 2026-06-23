@@ -28,6 +28,7 @@ Then list, update, or remove:
 | `commit-crafter` | Write clear, conventional git commit messages from your staged changes. |
 | `pr-describer` | Generate a structured pull request description from your branch diff. |
 | `eeat-blog` | Research keywords and write an EEAT-optimized SEO blog post into a repo's blog system, with Deeporax (Grok Imagine) images. |
+| `nextjs-skeletons` | Add loading.tsx and component-matched skeletons to a Next.js app, fixing and adding loading states on data calls with theme-aware, zero-CLS skeletons. |
 
 ## Add your own skill
 
