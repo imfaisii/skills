@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "commit-crafter",
+  "displayName": "Commit Crafter",
+  "version": "1.0.0",
+  "description": "Write clear, conventional git commit messages from your staged changes.",
+  "author": {
+    "name": "Faisal Ashfaq",
+    "url": "https://github.com/imfaisii"
+  },
+  "homepage": "https://github.com/imfaisii/skills",
+  "repository": "https://github.com/imfaisii/skills",
+  "license": "MIT",
+  "keywords": ["git", "commits", "conventional-commits", "workflow"]
+}

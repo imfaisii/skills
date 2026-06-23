@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "pr-describer",
+  "displayName": "PR Describer",
+  "version": "1.0.0",
+  "description": "Generate a structured pull request description from your branch diff.",
+  "author": {
+    "name": "Faisal Ashfaq",
+    "url": "https://github.com/imfaisii"
+  },
+  "homepage": "https://github.com/imfaisii/skills",
+  "repository": "https://github.com/imfaisii/skills",
+  "license": "MIT",
+  "keywords": ["git", "pull-request", "github", "review", "workflow"]
+}

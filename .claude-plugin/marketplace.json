@@ -1,0 +1,43 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "imfaisii-skills",
+  "description": "Faisal Ashfaq's personal marketplace of Claude Code skills.",
+  "owner": {
+    "name": "Faisal Ashfaq",
+    "email": "cfaysal099@gmail.com",
+    "url": "https://github.com/imfaisii"
+  },
+  "metadata": {
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "commit-crafter",
+      "displayName": "Commit Crafter",
+      "description": "Write clear, conventional git commit messages from your staged changes. Inspects the diff, infers the right type and scope, and proposes a tidy message.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Faisal Ashfaq",
+        "url": "https://github.com/imfaisii"
+      },
+      "source": "./plugins/commit-crafter",
+      "category": "development",
+      "keywords": ["git", "commits", "conventional-commits", "workflow"],
+      "homepage": "https://github.com/imfaisii/skills"
+    },
+    {
+      "name": "pr-describer",
+      "displayName": "PR Describer",
+      "description": "Generate a structured pull request description from your branch diff: summary, what changed, why, and a review checklist.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Faisal Ashfaq",
+        "url": "https://github.com/imfaisii"
+      },
+      "source": "./plugins/pr-describer",
+      "category": "development",
+      "keywords": ["git", "pull-request", "github", "review", "workflow"],
+      "homepage": "https://github.com/imfaisii/skills"
+    }
+  ]
+}
