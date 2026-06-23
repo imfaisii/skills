@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "nextjs-skeletons",
+  "displayName": "Next.js Skeletons",
+  "version": "1.0.0",
+  "description": "Add loading.tsx and component-matched skeletons to a Next.js app for faster perceived navigation, fixing and adding skeletons on data calls while mirroring the app theme, dark mode, and accessibility with zero layout shift.",
+  "author": {
+    "name": "Faisal Ashfaq",
+    "url": "https://github.com/imfaisii"
+  },
+  "homepage": "https://github.com/imfaisii/skills",
+  "repository": "https://github.com/imfaisii/skills",
+  "license": "MIT",
+  "keywords": ["nextjs", "react", "loading", "skeleton", "suspense", "performance", "app-router"]
+}

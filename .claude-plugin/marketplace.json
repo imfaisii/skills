@@ -52,6 +52,20 @@
       "category": "content",
       "keywords": ["seo", "blog", "content", "eeat", "keywords", "image-generation"],
       "homepage": "https://github.com/imfaisii/skills"
+    },
+    {
+      "name": "nextjs-skeletons",
+      "displayName": "Next.js Skeletons",
+      "description": "Add loading.tsx and component-matched skeletons to a Next.js app for faster perceived navigation, fixing and adding skeletons on data calls while mirroring the app theme, dark mode, and accessibility with zero layout shift.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Faisal Ashfaq",
+        "url": "https://github.com/imfaisii"
+      },
+      "source": "./plugins/nextjs-skeletons",
+      "category": "development",
+      "keywords": ["nextjs", "react", "loading", "skeleton", "suspense", "performance", "app-router"],
+      "homepage": "https://github.com/imfaisii/skills"
     }
   ]
 }
