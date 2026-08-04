@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "claude-design",
+  "displayName": "Claude Design Prompter",
+  "version": "1.0.0",
+  "description": "Turn a rough idea (and optional inspiration screenshots) into a crafted, slop-resistant prompt package for Claude Design: one master kickoff prompt that yields a full design system for a web or mobile app, plus follow-up prompts for iteration. Can generate supporting reference graphics via the Deeporax connector.",
+  "author": {
+    "name": "Faisal Ashfaq",
+    "url": "https://github.com/imfaisii"
+  },
+  "homepage": "https://github.com/imfaisii/skills",
+  "repository": "https://github.com/imfaisii/skills",
+  "license": "MIT",
+  "keywords": ["design", "design-system", "claude-design", "prompt", "ui", "ux", "web-app", "mobile-app"]
+}
