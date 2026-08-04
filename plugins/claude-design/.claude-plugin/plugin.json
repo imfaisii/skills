@@ -2,8 +2,8 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "claude-design",
   "displayName": "Claude Design Prompter",
-  "version": "1.0.0",
-  "description": "Turn a rough idea (and optional inspiration screenshots) into a crafted, slop-resistant prompt package for Claude Design: one master kickoff prompt that yields a full design system for a web or mobile app, plus follow-up prompts for iteration. Can generate supporting reference graphics via the Deeporax connector.",
+  "version": "1.1.0",
+  "description": "Slop-resistant prompt packages for Claude Design. Two skills: design-prompt turns a rough idea (and optional inspiration screenshots) into a master design-system prompt plus iteration follow-ups; screen-prompts researches the app, interrogates the user (via /grill-me when installed), maps every screen, and generates per-screen prompts plus an interactive device-frame canvas prompt for click-through testing mobile apps. Reference graphics via the Deeporax connector.",
   "author": {
     "name": "Faisal Ashfaq",
     "url": "https://github.com/imfaisii"
