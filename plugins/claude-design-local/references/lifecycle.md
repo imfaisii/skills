@@ -181,7 +181,7 @@ Install once:
 /plugin install claude-design-local@imfaisii-skills
 ```
 
-Restart the session so the hooks load. Then:
+Skills, agent, and hooks all register on install — no restart needed. Then:
 
 | Command | When |
 |---|---|

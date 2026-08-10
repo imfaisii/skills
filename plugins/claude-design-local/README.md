@@ -17,9 +17,9 @@ Background and the full web lifecycle: [`references/lifecycle.md`](references/li
 /plugin install claude-design-local@imfaisii-skills
 ```
 
-The string after `@` is the marketplace's `name` field, not the directory name. **Restart the
-session after installing** — hooks load at session start, so until you restart the two guards
-are inert.
+The string after `@` is the marketplace's `name` field, not the directory name. The skills,
+the agent, and both hooks register on install — no restart needed. Verified by installing
+mid-session and watching the guards deny a write in that same session.
 
 Verify:
 
