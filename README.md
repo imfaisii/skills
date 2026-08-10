@@ -29,6 +29,7 @@ Then list, update, or remove:
 | `pr-describer` | Generate a structured pull request description from your branch diff. |
 | `eeat-blog` | Research keywords and write an EEAT-optimized SEO blog post into a repo's blog system, with Deeporax (Grok Imagine) images. |
 | `nextjs-skeletons` | Add loading.tsx and component-matched skeletons to a Next.js app, fixing and adding loading states on data calls with theme-aware, zero-CLS skeletons. |
+| `claude-design-local` | Reproduce claude.ai/design output from Claude Code: the real call order, the intake gate, the canvas patterns, local `.dc.html` preview, and hooks that block the two silent failure modes. Restart the session after installing so the hooks load. |
 
 ## Add your own skill
 

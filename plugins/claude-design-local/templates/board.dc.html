@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet data-dc-atomics>
+        <meta name="design_doc_mode" content="canvas" />
+        <!-- <link rel="stylesheet" href="_ds/<SLUG>-<UUID>/styles.css" /> -->
+        <!-- <script src="_ds/<SLUG>-<UUID>/_ds_bundle.js"></script> -->
+        <style>
+          body {
+            margin: 0;
+            background: #f0eee9;
+            font-family: system-ui, sans-serif;
+          }
+          a {
+            color: #3d3a34;
+          }
+          a:hover {
+            color: #16150f;
+          }
+          .idx {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 16px 56px;
+            background: rgba(240, 238, 233, 0.94);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+          }
+          .idx a {
+            font: 600 10px ui-monospace, Menlo, monospace;
+            padding: 4px 7px;
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.07);
+            text-decoration: none;
+          }
+          .board {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 48px;
+            padding: 48px 56px 80px;
+            align-items: flex-start;
+          }
+          .frame {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex: none;
+            scroll-margin-top: 72px;
+          }
+          .flabel {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            font: 400 11px/1.3 ui-monospace, Menlo, monospace;
+            color: rgba(0, 0, 0, 0.5);
+          }
+          .fid {
+            font-weight: 600;
+            padding: 3px 7px;
+            background: rgba(0, 0, 0, 0.08);
+            border-radius: 5px;
+            color: #1a1a1a;
+          }
+          .phone {
+            width: 402px;
+            height: 874px;
+            border-radius: 44px;
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+          }
+          .screen {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+          }
+        </style>
+      </helmet>
+
+      <!-- Anchor index. One entry per frame. Plain in-page links, no state. -->
+      <div class="idx">
+        <a href="#s01">01</a>
+        <a href="#s02">02</a>
+      </div>
+
+      <div class="board">
+        <!-- A board is EXHAUSTIVE: every screen, plus every empty, loading,
+             error and edge state. That completeness is the point of the artifact.
+             No shared state, no sc-if — these are static frames. -->
+
+        <div class="frame" id="s01" data-screen-label="Splash">
+          <div class="flabel" data-drags-parent="1"><span class="fid">01</span><span>Splash</span></div>
+          <div class="phone">
+            <div class="screen"><!-- REPLACE --></div>
+          </div>
+        </div>
+
+        <div class="frame" id="s02" data-screen-label="Home — empty">
+          <div class="flabel" data-drags-parent="1">
+            <span class="fid">02</span><span>Home — empty</span>
+          </div>
+          <div class="phone">
+            <div class="screen"><!-- REPLACE --></div>
+          </div>
+        </div>
+      </div>
+    </x-dc>
+
+    <script type="text/x-dc" data-dc-script data-props="{}">
+      class Component extends DCLogic {
+        renderVals() {
+          return {};
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "claude-design-local",
+  "displayName": "Claude Design (local parity)",
+  "version": "1.0.0",
+  "description": "Reproduce claude.ai/design output from Claude Code: the real call order, the intake gate, the three canvas patterns, local .dc.html preview, and hooks that make the two silent failure modes impossible.",
+  "author": {
+    "name": "Faisal Ashfaq",
+    "url": "https://github.com/imfaisii"
+  },
+  "homepage": "https://github.com/imfaisii/skills",
+  "repository": "https://github.com/imfaisii/skills",
+  "license": "MIT",
+  "keywords": ["claude-design", "design", "dc-html", "design-system", "canvas", "mcp", "hooks"]
+}

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet data-dc-atomics>
+        <meta name="design_doc_mode" content="canvas" />
+        <!-- <link rel="stylesheet" href="_ds/<SLUG>-<UUID>/styles.css" /> -->
+        <!-- <script src="_ds/<SLUG>-<UUID>/_ds_bundle.js"></script> -->
+        <style>
+          body {
+            margin: 0;
+            background: #f0eee9;
+            font-family: system-ui, sans-serif;
+          }
+          a {
+            color: #3d3a34;
+          }
+          a:hover {
+            color: #16150f;
+          }
+          .stage {
+            display: flex;
+            gap: 40px;
+            padding: 56px;
+            align-items: flex-start;
+          }
+          .phone {
+            width: 402px;
+            height: 874px;
+            border-radius: 44px;
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+            flex: none;
+            position: relative;
+          }
+          .screen {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+          }
+          .notes {
+            max-width: 320px;
+            font: 400 12px/1.6 system-ui, sans-serif;
+            color: rgba(0, 0, 0, 0.6);
+          }
+          .notes h1 {
+            font: 600 15px/1.2 system-ui, sans-serif;
+            color: #1a1a1a;
+            margin: 0 0 12px;
+          }
+        </style>
+      </helmet>
+
+      <div class="stage">
+        <div class="phone" data-screen-label="Prototype">
+          <!-- ONE frame. The visible screen is state.screen; each branch is an sc-if
+               gated on a boolean exposed by renderVals(). Tapping swaps the branch
+               in the same DOM frame — a genuinely walkable prototype. -->
+          <sc-if value="{{ isStart }}" hint-placeholder-val="{{ true }}">
+            <div class="screen">
+              <!-- REPLACE — start screen -->
+              <button type="button" onClick="{{ goDetail }}">Open detail</button>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+            <div class="screen">
+              <!-- REPLACE — detail screen -->
+              <button type="button" onClick="{{ goBack }}">Back</button>
+            </div>
+          </sc-if>
+        </div>
+
+        <div class="notes">
+          <h1>REPLACE — what this flow proves</h1>
+          <p>REPLACE — one paragraph on the interaction being demonstrated.</p>
+          <p>The exhaustive screen board is in <a href="REPLACE-Board.dc.html">the board file</a>.</p>
+        </div>
+      </div>
+    </x-dc>
+
+    <script type="text/x-dc" data-dc-script data-props="{}">
+      class Component extends DCLogic {
+        constructor(props) {
+          super(props);
+          this.state = { screen: "start", prev: null };
+        }
+
+        go(s) {
+          return () => this.setState({ screen: s, prev: this.state.screen });
+        }
+
+        renderVals() {
+          const s = this.state.screen;
+          return {
+            isStart: s === "start",
+            isDetail: s === "detail",
+            goDetail: this.go("detail"),
+            goBack: () => this.setState({ screen: this.state.prev || "start" }),
+          };
+        }
+      }
+    </script>
+  </body>
+</html>
