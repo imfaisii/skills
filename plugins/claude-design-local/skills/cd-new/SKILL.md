@@ -144,7 +144,10 @@ etags. (`local_path` is in the schema but returns not-implemented.)
 
 If the work has 2+ independent outputs — several screens, several options, several assets —
 freeze the shared context first (tokens, shell, file manifest) and fan out one owned file per
-worker. Shared files stay on the main thread. That is covered in `using-claude-design`.
+worker. Shared files stay on the main thread — tokens, shell chrome, nav, the file manifest,
+and every cloud `write_files`. Workers own local `design/…` paths only, one writer per path,
+and never invent palette, type, or spacing. Order: shared shell and tokens first, then assets
+and screens in parallel, then you join, batch-push, and verify.
 
 Read `references/canvas-format.md` before your first `.dc.html`. The `{{ }}` language is not
 JavaScript and every mistake in it fails silently.

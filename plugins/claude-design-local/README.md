@@ -44,9 +44,10 @@ name, but do not rely on it.
 | `/claude-design-local:cd-system [name]` | Create or fill a design system, with the right project type |
 | `claude-design-local:claude-design-parity` | Model-invoked doctrine: call order, intake gate, canvas patterns |
 
-`claude-design-parity` owns parity only. MCP mechanics (etags, plan scopes, `copy_files`,
-Deeporax, the `design/` mirror) stay in the separate `using-claude-design` skill so the two
-do not drift.
+`claude-design-parity` owns parity: the call order, the intake gate, the canvas patterns. It
+states the MCP mechanics it depends on (etags, plan scopes, `copy_files`, the `design/`
+mirror, generating real graphics instead of shipping placeholders) inline, so the plugin has
+no external skill dependency.
 
 ### Agent
 

@@ -5,9 +5,22 @@ description: Use when designing through claude.ai/design from Claude Code and th
 
 # Claude Design parity
 
-This skill owns one thing: **making CLI output match web output.** The mechanics of the MCP
-tools (etags, plan scopes, `copy_files`, Deeporax, the `design/` mirror) live in the
-`using-claude-design` skill — do not duplicate them here, load that one when you need them.
+This skill owns one thing: **making CLI output match web output.** The MCP tool mechanics it
+depends on, stated once so nothing here dangles:
+
+- **etags.** `list_files` returns an `etag` per file. Pass it as `if_match` on every write to
+  that path; use `"0"` for a new file. Skipping it silently overwrites edits the user made in
+  the browser while you worked.
+- **Plan scopes.** `finalize_plan { scope: "project" }` is one consent checkpoint covering
+  every write for about four hours. `scope: "paths"` lasts about fifteen minutes.
+- **`copy_files`** moves files *between Claude Design projects only*. It cannot read your
+  disk, and it bypasses the `support.js` guard — check the destination directory yourself.
+- **The `design/` mirror.** Author text locally, then push the same bytes. Reading local disk
+  is faster than round-tripping and leaves you free to re-edit without re-fetching etags.
+- **Graphics.** The base prompt forbids hand-drawn complex SVG and asks for striped
+  placeholders. Do not ship the placeholder: generate the real asset with the Deeporax MCP,
+  save it under `design/assets/<kind>/`, push it as a project file, and reference it
+  relatively. One illustration language per project.
 
 The web's quality advantage is not a better model. It is four things the web does for you and
 the CLI does not: the injected base prompt, a template scaffold, a bound design system, and a
