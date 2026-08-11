@@ -70,8 +70,8 @@
     {
       "name": "claude-design-local",
       "displayName": "Claude Design (local parity)",
-      "description": "Reproduce claude.ai/design output from Claude Code. Ships the real call order, the intake gate that decides when to ask about aesthetics, the canvas patterns found in real web exports, local .dc.html preview with no cloud round trip, and hooks that turn the two silent failure modes into hard denials.",
-      "version": "1.0.0",
+      "description": "Reproduce claude.ai/design output from Claude Code. Hard-rules doctrine (no compromise): call order, intake gate, hybrid board default, Deeporax graphics, product-real content, verify-with-interaction, local .dc.html preview, hooks against silent failures.",
+      "version": "1.1.0",
       "author": {
         "name": "Faisal Ashfaq",
         "url": "https://github.com/imfaisii"

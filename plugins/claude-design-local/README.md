@@ -8,6 +8,13 @@ and runs a mandatory verify loop. All four are reachable over MCP. **Three of th
 silently when you skip them.** This plugin turns each one into either an enforced gate or a
 command you cannot forget.
 
+## Hard rules (non-negotiable)
+
+**[`references/hard-rules.md`](references/hard-rules.md)** is the locked execution pattern
+(product-real content, Deeporax graphics, hybrid board default, call order, verify with
+interaction, `open_url` only). Skills defer to it. No compromise unless the user overrides a
+specific point in the current message.
+
 Background and the full web lifecycle: [`references/lifecycle.md`](references/lifecycle.md).
 
 ## Install
@@ -42,12 +49,11 @@ name, but do not rely on it.
 | `/claude-design-local:cd-verify [project_id] [path]` | Render → gate → fresh eyes → act |
 | `/claude-design-local:cd-preview [dir]` | Local `.dc.html` preview with no cloud round trip |
 | `/claude-design-local:cd-system [name]` | Create or fill a design system, with the right project type |
-| `claude-design-local:claude-design-parity` | Model-invoked doctrine: call order, intake gate, canvas patterns |
+| `claude-design-local:claude-design-parity` | Model-invoked doctrine: hard rules, call order, intake, hybrid default, Deeporax, verify |
 
-`claude-design-parity` owns parity: the call order, the intake gate, the canvas patterns. It
-states the MCP mechanics it depends on (etags, plan scopes, `copy_files`, the `design/`
-mirror, generating real graphics instead of shipping placeholders) inline, so the plugin has
-no external skill dependency.
+`claude-design-parity` owns parity and points at `references/hard-rules.md`. It covers call
+order, intake gate, canvas patterns, product-real content, Deeporax graphics, upload
+discipline, and verify-with-interaction. No external skill dependency.
 
 ### Agent
 
@@ -102,11 +108,13 @@ exists so you can preview `.dc.html` locally.
 
 Primary-source capture, so the plugin is auditable rather than a set of claims:
 
+- `references/hard-rules.md` — **non-negotiable execution doctrine**
 - `references/base-prompt.md` — the injected web system prompt, verbatim
 - `references/hifi-design.md` — verbatim
 - `references/frontend-design.md` — verbatim
 - `references/canvas-format.md` — `.dc.html` internals, reverse-engineered from three exports
 - `references/design-system-format.md` — what the platform generates vs what you author
+- `references/lifecycle.md` — web lifecycle and CLI parity call order
 
 ## Known limits
 

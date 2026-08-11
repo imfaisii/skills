@@ -2,8 +2,8 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "claude-design-local",
   "displayName": "Claude Design (local parity)",
-  "version": "1.0.0",
-  "description": "Reproduce claude.ai/design output from Claude Code: the real call order, the intake gate, the three canvas patterns, local .dc.html preview, and hooks that make the two silent failure modes impossible.",
+  "version": "1.1.0",
+  "description": "Reproduce claude.ai/design output from Claude Code: hard-rules doctrine, call order, intake gate, hybrid board default, Deeporax graphics, product-real content, verify-with-interaction, local .dc.html preview, hooks against silent failures.",
   "author": {
     "name": "Faisal Ashfaq",
     "url": "https://github.com/imfaisii"

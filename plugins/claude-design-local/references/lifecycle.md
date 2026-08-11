@@ -118,6 +118,7 @@ enforced gate or a command you cannot forget.
 ### The parity call order
 
 This is the whole thing. Run it in this order and the output matches the web.
+**Hard doctrine (non-negotiable detail):** [`hard-rules.md`](hard-rules.md).
 
 ```
 0.  list_design_systems                 # published only; DesignSync list_projects for the rest
@@ -128,7 +129,8 @@ This is the whole thing. Run it in this order and the output matches the web.
 5.  create_support_js                    # once per directory that will hold .dc.html
 6.  finalize_plan { scope: "project" }   # one consent checkpoint, ~4h
 7.  author locally in design/ → write_files with if_match
-8.  render_preview → gate → fresh eyes → act
+    # + Deeporax real graphics, product-real copy, hybrid board default, sibling CSS
+8.  render_preview → gate → interact → fresh eyes → act
 9.  hand over open_url (never serve_url)
 ```
 

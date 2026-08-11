@@ -9,6 +9,9 @@ user-invocable: true
 
 Target: **$ARGUMENTS** (if blank, use the project and path from `design/README.md`)
 
+**Hard rule:** you do not call a Claude Design canvas done without this loop when browser
+tooling exists. See `references/hard-rules.md` §8. No compromise.
+
 A file that parses cleanly can still render blank, clip a heading, or quietly drop the one
 change that was asked for. This loop is the difference between "I wrote it" and "it works".
 
@@ -53,7 +56,12 @@ design is meaningful yet**:
 - 404'd subresources — a broken asset `src` shows up here before it shows up visually
 - a blank or near-blank mount
 - markup rendering as literal text → `support.js` is missing from that directory
+- **primary titles or CTAs clipped inside a phone frame** (hero too tall, footer pushed off)
 - decks: text below 24px, overflowing text, overlapping text
+
+After a clean mechanical gate on an **interactive** board: click at least one control per
+interactive frame (e.g. onboarding Continue, home filter) and confirm state change in a
+fresh snapshot. No interaction check → not verified for hybrid/flow canvases.
 
 Fix and re-render.
 

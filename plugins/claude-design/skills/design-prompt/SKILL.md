@@ -7,6 +7,8 @@ description: Turn a rough product idea (and optional inspiration screenshots) in
 
 The user gives a rough idea ("a fitness tracking app", "dashboard for my SaaS") and optionally some inspiration screenshots. You return a **prompt package** they paste into Claude Design: one master kickoff prompt that makes Claude Design build a full design system and key screens, plus a small library of follow-up prompts for iterating. You do NOT produce the design yourself.
 
+**If the user wants you to execute the design in Claude Code / MCP instead of only writing a pasteable prompt**, stop treating this as a prompt-package task. Load `claude-design-local:claude-design-parity` and obey `references/hard-rules.md` (non-negotiable): call order, hybrid board default, product-real content, Deeporax graphics, verify-with-interaction, `open_url` only. This skill stays for *prompt packages* only.
+
 The core skill is a **specificity trade**: be ruthlessly specific about product, audience, information architecture, layout, content, and behavior — and deliberately *directional* (never prescriptive) about color and typography. Claude Design does its best work when it owns the aesthetic execution inside a strongly-defined brief. Naming hex codes and fonts in the prompt is how you get AI slop; naming personality, density, and constraints is how you avoid it.
 
 ## Inputs
