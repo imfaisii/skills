@@ -1,14 +1,15 @@
 # App Store Connect MCP (`dp-asc`)
 
-Open-source **Model Context Protocol** server that exposes **the full App Store Connect API** as MCP tools.
+Open-source **Model Context Protocol** server for the **full App Store Connect API**.
 
-Tools are **generated from Apple’s official OpenAPI specification** — not a hand-maintained subset — so coverage tracks Apple’s published surface.
+The catalog is **generated from Apple’s official OpenAPI specification** — not a hand-maintained subset — so coverage tracks Apple’s published surface. The **LLM-facing surface is 4 meta-tools**, so sessions do not pay ~hundreds of thousands of tokens to list 1,200+ schemas.
 
 | | |
 | --- | --- |
 | Spec in tree | `openapi/app-store-connect.openapi.json` |
 | API | App Store Connect API **4.4.1** (OpenAPI 3.0.1) |
-| Tools | **1263** (one MCP tool per path + method) |
+| Catalog | **1263** operations (one per path + method) |
+| MCP tools (default) | **4** meta-tools: `asc_search`, `asc_schema`, `asc_call`, `asc_tags` |
 | Paths | **966** |
 | Resource tags | **195** |
 | Auth | ES256 JWT (`iss` + `kid` + `.p8`) → `https://api.appstoreconnect.apple.com` |
@@ -16,13 +17,34 @@ Tools are **generated from Apple’s official OpenAPI specification** — not a 
 
 > **No credentials are stored in this repository.** You supply your own App Store Connect API key at runtime.
 
+## Why meta-tools (not 1263 MCP tools)
+
+Registering every OpenAPI operation as its own MCP tool dumps full JSON Schemas into the model context (on the order of **hundreds of thousands of tokens**). That burns budget before any real work happens.
+
+Default design:
+
+1. Vendor Apple’s OpenAPI JSON under `openapi/`.
+2. `bun run generate` → `generated/tools.json` + `generated/manifest.json` (full catalog, internal).
+3. Expose **four** MCP tools that search / describe / call that catalog.
+
+```text
+asc_search  → find operations (name, method, path, tags; no full schemas)
+asc_schema  → one operation’s input JSON Schema + call hint
+asc_call    → execute operationId + args  (or _dryRun: true)
+asc_tags    → resource tags + counts (narrow search)
+```
+
+Escape hatch for debugging only:
+
+```bash
+export ASC_EXPOSE_ALL_TOOLS=1   # also register every generated operation as its own tool
+```
+
+Prefer leaving this **unset** in Claude Code / Desktop.
+
 ## Why generated
 
-Hand-written ASC MCPs miss endpoints and drift. This package:
-
-1. Vendors Apple’s OpenAPI JSON under `openapi/`.
-2. Runs `bun run generate` → `generated/tools.json` + `generated/manifest.json`.
-3. Serves **every** `operationId` as an MCP tool over stdio.
+Hand-written ASC MCPs miss endpoints and drift. This package keeps Apple’s zip as source of truth and regenerates the internal catalog; meta-tools always ride on top of that catalog.
 
 ## Requirements
 
@@ -51,13 +73,31 @@ export ASC_PRIVATE_KEY_PATH="$HOME/path/to/AuthKey_XXXXXXXXXX.p8"
 
 Aliases also work: `APP_STORE_CONNECT_ISSUER_ID`, `APP_STORE_CONNECT_KEY_ID`, `APP_STORE_CONNECT_PRIVATE_KEY_PATH`, or inline PEM via `ASC_PRIVATE_KEY` / `APP_STORE_CONNECT_PRIVATE_KEY`.
 
-Optional: `ASC_BASE_URL` (default `https://api.appstoreconnect.apple.com`).
+Optional:
+
+| Variable | Purpose |
+| --- | --- |
+| `ASC_BASE_URL` | Default `https://api.appstoreconnect.apple.com` |
+| `ASC_EXPOSE_ALL_TOOLS=1` | Register all 1263 operations as MCP tools (debug only; huge context cost) |
 
 Live check (calls `GET /v1/apps`):
 
 ```bash
 bun run scripts/live-check.ts
 ```
+
+## Agent usage pattern
+
+```text
+1. asc_tags                         # optional orientation
+2. asc_search { query: "list apps" }
+3. asc_schema { operation: "apps_getCollection" }
+4. asc_call   { operation: "apps_getCollection", args: { limit: 10 } }
+   # or dry-run:
+   asc_call   { operation: "apps_getCollection", _dryRun: true, args: { limit: 10 } }
+```
+
+`asc_call` accepts path/query fields either inside `args` or as top-level keys alongside `operation`. JSON:API writes use `body`.
 
 ## Add to Claude Code (global)
 
@@ -78,7 +118,7 @@ claude mcp get dp-asc
 claude mcp list
 ```
 
-After adding, **restart Claude Code** (or start a new session) so tools appear as `mcp__dp-asc__…`.
+After adding, **restart Claude Code** (or start a new session) so tools appear as `mcp__dp-asc__asc_search`, `…asc_schema`, `…asc_call`, `…asc_tags`.
 
 ## Claude Desktop
 
@@ -102,10 +142,21 @@ Add to your Claude Desktop config (`claude_desktop_config.json`):
 
 ## Tool shape
 
+### Meta-tools (default)
+
+| Tool | Input | Output |
+| --- | --- | --- |
+| `asc_search` | `query`, optional `tag`, `method`, `limit` | Ranked hits: `operationId`, method, path, tags, param names |
+| `asc_schema` | `operation` (operationId or name) | Full `inputSchema`, path/query lists, `callHint` |
+| `asc_call` | `operation`, `args`, optional `_dryRun` | ASC HTTP response (JSON) or dry-run resolution |
+| `asc_tags` | optional `limit` | Tags with operation counts |
+
+### Internal catalog entry (generated)
+
 - **Name**: OpenAPI `operationId` (truncated + short hash if longer than 64 characters).
 - **Description**: summary + `METHOD path` + tag + operationId.
-- **Input**:
-  - Path params as required fields (`id`, …).
+- **Input** (via `asc_schema` / `asc_call` args):
+  - Path params as fields (`id`, …).
   - All query params (`filter[…]`, `include`, `fields[…]`, `limit`, `sort`, …).
   - `body` object for POST / PATCH / PUT (JSON:API document).
   - `_dryRun: true` → resolve method/path/query/body **without** calling Apple.
@@ -151,11 +202,12 @@ bun run smoke
 ```text
 mcp/dp-asc/
   openapi/app-store-connect.openapi.json
-  generated/tools.json
+  generated/tools.json          # full catalog (internal)
   generated/manifest.json
-  src/auth.ts                 # ES256 JWT (no secrets in repo)
-  src/client.ts               # fetch wrapper
-  src/index.ts                # MCP stdio server
+  src/auth.ts                   # ES256 JWT (no secrets in repo)
+  src/client.ts                 # fetch wrapper
+  src/catalog.ts                # search / resolve over tools.json
+  src/index.ts                  # MCP stdio server (4 meta-tools)
   src/types.ts
   scripts/generate-tools.ts
   scripts/smoke.ts

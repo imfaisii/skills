@@ -2,7 +2,7 @@
   "name": "dp-asc",
   "version": "1.0.0",
   "private": true,
-  "description": "MCP server exposing the full App Store Connect API (OpenAPI-generated)",
+  "description": "MCP server for the full App Store Connect API — 4 meta-tools over an OpenAPI-generated catalog",
   "type": "module",
   "bin": {
     "dp-asc": "./src/index.ts"

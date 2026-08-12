@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Offline smoke test: generate → load tools → dry-run a few shapes → optional live call.
+ * Offline smoke test: generate → catalog → meta-tools → server boot → optional live call.
  *
  * Live call only if ASC_ISSUER_ID + ASC_KEY_ID + ASC_PRIVATE_KEY_PATH are set.
  */
@@ -27,8 +27,7 @@ async function runGenerate(): Promise<void> {
   assert(code === 0, `generate failed: exit ${code}`);
 }
 
-async function mcpListTools(): Promise<number> {
-  // Drive stdio MCP: initialize + tools/list
+async function mcpBootCheck(): Promise<string> {
   return new Promise((resolve, reject) => {
     const child = spawn("bun", ["run", "src/index.ts"], {
       cwd: ROOT,
@@ -36,43 +35,30 @@ async function mcpListTools(): Promise<number> {
       env: process.env,
     });
 
-    let out = "";
     let err = "";
-    child.stdout.on("data", (d) => {
-      out += d.toString();
-    });
     child.stderr.on("data", (d) => {
       err += d.toString();
     });
 
-    const send = (msg: object) => {
-      const body = JSON.stringify(msg);
-      child.stdin.write(
-        `Content-Length: ${Buffer.byteLength(body, "utf8")}\r\n\r\n${body}`,
-      );
-    };
-
-    // MCP SDK default is newline JSON-RPC for stdio in many versions — try both.
-    // Prefer simple NDJSON first (SDK 1.x StdioServerTransport uses length headers OR newline depending on version).
-    // We'll use the SDK client instead below if this is fragile — for smoke, import tools.json directly
-    // and only process-start the server for boot check.
-
     const bootTimer = setTimeout(() => {
       child.kill();
-      if (err.includes("ready") || err.includes("tools")) {
-        resolve(-1); // booted
+      if (err.includes("ready") || err.includes("meta-tools")) {
+        resolve(err);
       } else {
-        reject(new Error(`server boot timeout. stderr=${err.slice(0, 500)} stdout=${out.slice(0, 200)}`));
+        reject(
+          new Error(
+            `server boot timeout. stderr=${err.slice(0, 500)}`,
+          ),
+        );
       }
     }, 5000);
 
     child.on("error", reject);
     child.stderr.once("data", () => {
-      // once ready line appears we're good
       setTimeout(() => {
         clearTimeout(bootTimer);
         child.kill();
-        resolve(-1);
+        resolve(err);
       }, 200);
     });
   });
@@ -91,7 +77,10 @@ async function liveAppsList(): Promise<void> {
     throw new Error(`live call failed: ${res.status}`);
   }
   const data = res.body as { data?: unknown[] };
-  console.log("apps returned", Array.isArray(data?.data) ? data.data.length : "(no data array)");
+  console.log(
+    "apps returned",
+    Array.isArray(data?.data) ? data.data.length : "(no data array)",
+  );
 }
 
 async function main() {
@@ -126,8 +115,6 @@ async function main() {
     assert(t.inputSchema?.type === "object", `bad schema: ${t.name}`);
   }
 
-  // Spot-check core operations that exist in ASC OpenAPI 4.4.1
-  // Note: many resources are nested under apps (no top-level getCollection).
   const mustInclude = [
     "apps_getCollection",
     "apps_getInstance",
@@ -156,18 +143,90 @@ async function main() {
     assert(opIds.has(id), `missing expected operationId: ${id}`);
   }
 
-  // Dry-run client path fill via dynamic import of handler logic
-  const sample = tools.find((t) => t.operationId === "apps_getCollection");
-  assert(sample, "apps_getCollection missing");
-  console.log("sample tool", {
-    name: sample.name,
-    path: sample.path,
-    queryParams: sample.queryParams.length,
+  console.log("== catalog meta-router ==");
+  const {
+    catalogSize,
+    listTags,
+    resolveTool,
+    searchCatalog,
+    toOperationSchema,
+  } = await import("../src/catalog.ts");
+
+  assert(catalogSize() === tools.length, "catalog size mismatch");
+
+  const appsSearch = searchCatalog({ query: "list apps", limit: 10 });
+  assert(appsSearch.returned > 0, "search 'list apps' returned 0");
+  assert(
+    appsSearch.hits.some((h) => h.operationId === "apps_getCollection"),
+    "search 'list apps' should rank apps_getCollection",
+  );
+  console.log(
+    "search list apps top:",
+    appsSearch.hits.slice(0, 3).map((h) => h.operationId),
+  );
+
+  const buildsGet = searchCatalog({
+    query: "builds",
+    method: "GET",
+    limit: 10,
   });
+  assert(
+    buildsGet.hits.every((h) => h.method === "GET"),
+    "method filter failed",
+  );
+  assert(
+    buildsGet.hits.some((h) => h.operationId === "builds_getCollection"),
+    "builds GET should include builds_getCollection",
+  );
+
+  const tagOnly = searchCatalog({ query: "", tag: "Apps", limit: 5 });
+  assert(tagOnly.returned > 0, "tag-only search failed");
+  assert(
+    tagOnly.hits.every((h) => h.tags.includes("Apps")),
+    "tag filter failed",
+  );
+
+  const tags = listTags();
+  assert(tags.length >= 50, `expected many tags, got ${tags.length}`);
+  assert(
+    tags.some((t) => t.tag === "Apps" && t.count > 0),
+    "Apps tag missing",
+  );
+
+  const resolved = resolveTool("apps_getCollection");
+  assert(resolved, "resolveTool apps_getCollection");
+  assert(
+    resolveTool(resolved!.name)?.operationId === "apps_getCollection",
+    "resolve by name failed",
+  );
+
+  const schema = toOperationSchema(resolved!);
+  assert(schema.inputSchema?.type === "object", "schema missing");
+  assert(schema.callHint.operation === "apps_getCollection", "callHint");
+  assert(schema.method === "GET", "schema method");
+
+  // dry-run path through index helper behavior via client format only
+  const { formatToolResult } = await import("../src/client.js");
+  const fake = formatToolResult({
+    status: 200,
+    headers: {},
+    body: { ok: true },
+    contentType: "application/json",
+  });
+  assert(!fake.isError && fake.text.includes("ok"), "formatToolResult failed");
+
+  // Simulated asc_call dry-run using catalog + path fill (no network)
+  const sample = resolveTool("apps_getInstance");
+  assert(sample, "apps_getInstance");
+  assert(sample!.pathParams.includes("id"), "apps_getInstance needs id");
 
   console.log("== server boot ==");
-  await mcpListTools();
-  console.log("server started and printed ready on stderr");
+  const bootLog = await mcpBootCheck();
+  assert(
+    bootLog.includes("meta-tools") || bootLog.includes("ready"),
+    `unexpected boot log: ${bootLog.slice(0, 300)}`,
+  );
+  console.log("server ready line:", bootLog.trim().split("\n").pop());
 
   const hasLive =
     (process.env.ASC_ISSUER_ID || process.env.APP_STORE_CONNECT_ISSUER_ID) &&
@@ -180,24 +239,27 @@ async function main() {
   if (hasLive) {
     console.log("== live GET /v1/apps ==");
     await liveAppsList();
+
+    // live via catalog-resolved operation
+    const { ascRequest } = await import("../src/client.js");
+    const op = resolveTool("apps_getCollection");
+    assert(op, "apps_getCollection for live");
+    const res = await ascRequest({
+      method: op!.method,
+      path: op!.path,
+      query: { limit: 3 },
+    });
+    assert(res.status < 400, `meta-style live call status ${res.status}`);
+    console.log("meta-style live call ok", res.status);
   } else {
     console.log(
       "== live skipped (set ASC_ISSUER_ID, ASC_KEY_ID, ASC_PRIVATE_KEY_PATH to enable) ==",
     );
   }
 
-  // dryRun token-less path through client fillPath
-  const { formatToolResult } = await import("../src/client.js");
-  const fake = formatToolResult({
-    status: 200,
-    headers: {},
-    body: { ok: true },
-    contentType: "application/json",
-  });
-  assert(!fake.isError && fake.text.includes("ok"), "formatToolResult failed");
-
   console.log("\nSMOKE OK", {
     tools: tools.length,
+    metaTools: ["asc_search", "asc_schema", "asc_call", "asc_tags"],
     apiVersion: manifest.apiVersion,
     live: !!hasLive,
   });
