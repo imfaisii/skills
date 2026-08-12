@@ -31,6 +31,16 @@ Then list, update, or remove:
 | `nextjs-skeletons` | Add loading.tsx and component-matched skeletons to a Next.js app, fixing and adding loading states on data calls with theme-aware, zero-CLS skeletons. |
 | `claude-design-local` | Reproduce claude.ai/design output from Claude Code: the real call order, the intake gate, the canvas patterns, local `.dc.html` preview, and hooks that block the two silent failure modes. |
 
+## MCP servers
+
+Separate from marketplace plugins. Clone this repo (or copy the folder), install with Bun, then `claude mcp add`. **Bring your own secrets** — never commit `.p8` keys or Issuer/Key IDs.
+
+| Server | Path | What it does |
+| --- | --- | --- |
+| `dp-asc` | [`mcp/dp-asc`](./mcp/dp-asc) | Full App Store Connect API as MCP tools (OpenAPI-generated, 1000+ tools). |
+
+See [`mcp/README.md`](./mcp/README.md) and each server’s own README for setup.
+
 ## Add your own skill
 
 Each skill ships as a small plugin under `plugins/`. To add one:
