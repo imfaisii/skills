@@ -37,7 +37,7 @@ Separate from marketplace plugins. Clone this repo (or copy the folder), install
 
 | Server | Path | What it does |
 | --- | --- | --- |
-| `dp-asc` | [`mcp/dp-asc`](./mcp/dp-asc) | Full App Store Connect API as MCP tools (OpenAPI-generated, 1000+ tools). |
+| `dp-asc` | [`mcp/dp-asc`](./mcp/dp-asc) | Full App Store Connect API via 4 meta-tools (`asc_search` / `asc_schema` / `asc_call` / `asc_tags`) over an OpenAPI-generated catalog (1000+ ops). |
 
 See [`mcp/README.md`](./mcp/README.md) and each server’s own README for setup.
 
