@@ -4,13 +4,43 @@ The detailed playbook for Phase 3+ of `eeat-blog`. Goal: content so comprehensiv
 
 ---
 
-## Images (Deeporax / Grok Imagine)
+## Images
 
-Generate **2-3 images** with the **Deeporax AI connector's Grok Imagine tool**. No external image-generation HTTP API, no hardcoded endpoint, no fetch — the connector only. Save each output into the repo's asset directory (detected in Phase 0) and reference it by local path with the repo's image component (`next/image`, etc.). Use keyword-rich alt text.
+Generate **2-3 images** with whichever image tool Phase 3 resolved into `config.imageTool`. Any connected MCP image tool works: `mcp__grok-remote__generate_image`, another `generate_image` tool, or the Deeporax connector's Grok Imagine tool. Never call an image HTTP API directly and never hardcode an endpoint.
 
-If the connector is unavailable, stop and ask the user to connect Deeporax. Do not substitute another image pipeline without asking.
+**Always ship WebP, never a raw PNG or JPEG.** Image tools return PNG, which runs 0.5 MB to 2 MB per image and drags down Largest Contentful Paint, the exact metric the post is trying to win. Convert every generated image before you reference it:
 
-**1. Hero / featured image** (top of post, after the title, before the intro)
+```bash
+cwebp -q 82 input.png -o output.webp && rm input.png
+```
+
+Quality 82 is the sweet spot: visually identical at article width, and typically 95% smaller. If `cwebp` is missing, use `sips -s format webp` on macOS or `sharp` if the repo already has it. Check the output dimensions match the source before you delete the original.
+
+Save each `.webp` into `config.blog.imageDir` and reference it by local path with `config.blog.imageComponent` (`next/image`, `astro:assets`, a raw `img`). Use keyword-rich alt text.
+
+If no image tool is connected, do not block the post. Write it, leave the image slots as clearly marked TODOs, and tell the user which connector to enable.
+
+**Resolve the tool at run time.** MCP connector ids change between sessions, so a stored id like `mcp__<uuid>__generate_image` goes stale. Find the image and vision tools with ToolSearch (`generate_image`, `chat_with_vision`) and use whatever it returns.
+
+**Generate candidates, rank them, keep the best.** One image per slot is a coin toss. For each slot:
+1. Generate 2 candidates in one call (`n: 2`, `aspect_ratio: "16:9"`, the cheapest model first, e.g. `grok-imagine-image`). Keep the prompt free of words you want rendered: image models garble text, so always add "no text, no logos, no watermark".
+2. Rank them with one vision call (`chat_with_vision`, `detail: "low"`, both URLs in one call). Score each 0-10 on relevance to the section's point, clean (no garbled letters, logos or watermarks), reads at a 400 px thumbnail, and brand fit. Ask for JSON only, including a suggested alt text for the winner.
+3. Keep the highest total. If the best scores under 7 on relevance or clean, regenerate once with a sharper prompt. If it still fails, ship the slot as a marked TODO rather than a bad image.
+4. Log each slot's winning prompt and score in the run log, so later runs learn which prompts work.
+
+Cost on the Grok connector, measured 2026-10-02: about $0.04 for 2 candidates plus about $0.02 for the ranking call, so roughly $0.18 for a 3-image post.
+
+**Image SEO, so the images rank in Google Images too.**
+- **Filename:** descriptive kebab case with the topic, e.g. `grok-imagine-retirement-migration.webp`, never `image1.webp`. The filename is a ranking signal.
+- **Alt text:** say what the image shows, with the target keyword once, under 125 characters. Never start with "image of".
+- **Caption:** add a markdown title, `![alt](src "caption")`, when the renderer turns it into a `<figcaption>`. Captions are read more than body text.
+- **Placement:** put each image right next to the paragraph it explains. Google uses the surrounding text to understand it.
+- **Size:** the hero at least 1200 px wide, for Discover and large image previews. Body images can be smaller after WebP conversion.
+- **Sitemap:** the site's sitemap should list post images (`<image:image>`). If it does not, note it in the run report as a site fix.
+
+**The hero is the cover, and the cover is never repeated in the body.** Most blog systems render the cover image themselves from a `coverImage` field, above the first paragraph. If you also embed that same file in the body markdown, the reader sees it once at the top and again a screen later, which looks like a bug because it is one. Set the cover field, then use different files for every in-body image.
+
+**1. Hero / featured image** (the cover field only, never an inline markdown image)
 > Prompt: "Professional hero image for [KEYWORD] article, modern [INDUSTRY] context, clean, high quality, no text."
 Landscape, web-optimized. `loading="eager"`.
 
@@ -22,9 +52,8 @@ Landscape. `loading="lazy"`.
 > Prompt: "Professional infographic-style visualization for [KEYWORD] statistics and benefits, no text."
 Square. `loading="lazy"`.
 
-Reference pattern (adapt to the repo's component):
+Reference pattern for the two in-body images only, adapted to the repo's component. The hero is not in this list because it belongs to the cover field:
 ```html
-<img src="[LOCAL_IMAGE_PATH]" alt="[KEYWORD] - comprehensive guide" class="w-full h-auto rounded-lg mb-8" loading="eager" />
 <img src="[LOCAL_IMAGE_PATH]" alt="[KEYWORD] explained - key concepts" class="w-full h-auto rounded-lg my-8" loading="lazy" />
 <img src="[LOCAL_IMAGE_PATH]" alt="[KEYWORD] statistics and data" class="w-full h-auto rounded-lg my-8" loading="lazy" />
 ```
@@ -33,13 +62,13 @@ Reference pattern (adapt to the repo's component):
 
 ## 1. EEAT foundation
 
-**Expertise** — Author bio section with credentials: certifications, years of experience, professional profile link, notable work, company affiliation and role. Pull the author/brand from the repo (Phase 0); never fabricate a real person's credentials, use the site's stated author or a clearly-labeled editorial byline.
+**Expertise**: Author bio section with credentials: certifications, years of experience, professional profile link, notable work, company affiliation and role. Pull the author/brand from the repo (Phase 0); never fabricate a real person's credentials, use the site's stated author or a clearly-labeled editorial byline.
 
-**Experience** — 2-3 mini case studies, each with: initial problem state + metrics, the implementation process, measurable outcomes (% improvement, ROI, time saved), and lessons learned. If real cases aren't available, frame as illustrative scenarios and label them as such — do not present invented results as real.
+**Experience**: 2-3 mini case studies, each with: initial problem state + metrics, the implementation process, measurable outcomes (% improvement, ROI, time saved), and lessons learned. If real cases aren't available, frame as illustrative scenarios and label them as such. Do not present invented results as real.
 
-**Authoritativeness** — Citation framework: aim for 15+ authoritative sources (academic papers, industry reports, expert interviews). Prefer data from the last 18 months for time-sensitive topics. Link to original research. Only cite sources you can verify via WebSearch/WebFetch; never invent citations or URLs.
+**Authoritativeness**: Citation framework: aim for 15+ authoritative sources (academic papers, industry reports, expert interviews). Prefer data from the last 18 months for time-sensitive topics. Link to original research. Only cite sources you can verify via WebSearch/WebFetch; never invent citations or URLs.
 
-**Trustworthiness** — Transparency: methodology notes for any original data, conflict-of-interest disclosure where relevant, a prominent "Last updated" date, and an editorial-review note.
+**Trustworthiness**: Transparency: methodology notes for any original data, conflict-of-interest disclosure where relevant, a prominent "Last updated" date, and an editorial-review note.
 
 ---
 
@@ -55,25 +84,25 @@ Reference pattern (adapt to the repo's component):
 [HERO IMAGE goes after the title, before this opening.]
 
 ### Deep-dive section template (each major H2)
-- **Opening question (H2)** — phrased the way a buyer would search it
-- **Quick answer box** — 40-60 words, optimized for the featured snippet
-- **Context** — 150-200 words: why this matters now
-- **Evidence** — 200-250 words: data, studies, examples (with citations)
-- **Application** — 150-200 words: how to implement
-- **Common pitfalls** — 100-150 words: what to avoid
-- **Success metrics** — bullet list: how to measure impact
+- **Opening question (H2)**: phrased the way a buyer would search it
+- **Quick answer box**: 40-60 words, optimized for the featured snippet
+- **Context**: 150-200 words: why this matters now
+- **Evidence**: 200-250 words: data, studies, examples (with citations)
+- **Application**: 150-200 words: how to implement
+- **Common pitfalls**: 100-150 words: what to avoid
+- **Success metrics**: bullet list: how to measure impact
 
 [MID-ARTICLE IMAGE after 2-3 major sections.]
 
 ### Statistical data (minimum 3 presentations)
-1. **Comparison data** — before/after or competitor analysis (table or bullets, with source attribution in-text)
-2. **Process steps** — numbered implementation phases with checkpoints
-3. **Statistical insights** — industry benchmarks, 3-5 year trends, segmented data
+1. **Comparison data**: before/after or competitor analysis (table or bullets, with source attribution in-text)
+2. **Process steps**: numbered implementation phases with checkpoints
+3. **Statistical insights**: industry benchmarks, 3-5 year trends, segmented data
 
 [DATA VISUALIZATION IMAGE here, if applicable.]
 
 Data presentation format:
-> "According to [Source, Year], [metric] increased by X% among [segment], compared to Y% in [comparison group] — a [difference] improvement, equivalent to [real-world impact]."
+> "According to [Source, Year], [metric] increased by X% among [segment], compared to Y% in [comparison group], a [difference] improvement, equivalent to [real-world impact]."
 
 (Use the figures only if verifiable. If estimating, say so.)
 
@@ -95,15 +124,15 @@ Mix deliberately so the page is scannable and deep:
 - Short (50-75) for transitions/summaries
 - Bullet lists, numbered lists, comparison tables, quote blocks, callout boxes (tips/warnings)
 
-**Semantic depth (from the Phase 1 keyword map):** primary keyword, 10-15 LSI keywords, 5-7 entity associations, 8-10 question variations. Place naturally — no stuffing.
+**Semantic depth (from the Phase 1 keyword map):** primary keyword, 10-15 LSI keywords, 5-7 entity associations, 8-10 question variations. Place naturally, no stuffing.
 
 ---
 
 ## 5. FAQ architecture (three tiers, ~15 questions)
 
-1. **Basic** (5) — fundamental concepts
-2. **Implementation** (5) — how-to specifics
-3. **Troubleshooting** (5) — common problems
+1. **Basic** (5): fundamental concepts
+2. **Implementation** (5): how-to specifics
+3. **Troubleshooting** (5): common problems
 
 Format per question:
 ```
@@ -121,7 +150,7 @@ Mark up the whole FAQ block with FAQ JSON-LD (see Schema).
 
 In-text:
 - Statistics: [statistic] (Source, Year)
-- Expert quotes: "Quote" — Name, Title, Company
+- Expert quotes: "Quote", then Name, Title, Company
 - Studies: Research by [Institution] found...
 - Reports: According to [Report Name, Year]...
 
@@ -135,7 +164,7 @@ Reference section grouped by type: academic (peer-reviewed), industry reports, e
 - Shareable expert-quote cards
 - Tweet-ready statistics
 - Self-assessment ("Where are you in this journey?")
-- Downloadable checklist / copyable template / simple calculator framework — only if the repo can host them; otherwise inline the checklist/template as text.
+- Downloadable checklist / copyable template / simple calculator framework, only if the repo can host them; otherwise inline the checklist/template as text.
 
 ---
 
@@ -184,7 +213,7 @@ Add **FAQPage** schema for the FAQ section, and **HowTo** schema when the conten
 ## House style (write like a human)
 
 - No em-dashes (—) and no en-dashes in prose. Use a comma, period, colon, or parentheses.
-- No `<em>`/`<i>` for emphasis — carry emphasis with word choice.
+- No `<em>`/`<i>` for emphasis. Carry emphasis with word choice.
 - Avoid the AI tells: "it's not just X, it's Y", "—ensuring/—allowing" clauses, decorative bullet dashes.
 - Vary sentence and paragraph length. The test: would a person typing on a normal keyboard write this?
 
@@ -192,7 +221,9 @@ Add **FAQPage** schema for the FAQ section, and **HowTo** schema when the conten
 
 ## Quality checklist (Phase 5)
 
-- [ ] 2-3 images generated via the Deeporax / Grok Imagine connector and referenced by local path
+- [ ] 2-3 images generated via the configured image tool, converted to WebP, and referenced by local path, or explicitly marked TODO with the reason
+- [ ] No PNG or JPEG left in the post's image directory, and every image under 150 KB
+- [ ] The cover image is NOT also embedded in the body markdown
 - [ ] Primary keyword + LSI terms, entities, and question variations covered naturally
 - [ ] Answers specific buyer questions completely; optimized for featured snippets
 - [ ] 15+ verifiable authoritative citations (no invented sources)
@@ -202,4 +233,4 @@ Add **FAQPage** schema for the FAQ section, and **HowTo** schema when the conten
 - [ ] Multiple content formats (paragraphs, lists, tables, callouts, quotes)
 - [ ] Clear EEAT signals (author bio, methodology, last-updated, disclosures)
 - [ ] Post registered in the blog index; build/typecheck passes
-- [ ] Human tone — no em-dashes, no AI tells
+- [ ] Human tone, no em-dashes, no AI tells
